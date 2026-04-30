@@ -1,0 +1,12 @@
+<h2>Orders</h2>
+<div id="o"></div>
+
+<script>
+async function load(){
+let r=await fetch("/orders");
+let d=await r.json();
+let h="";d.forEach(i=>h+=`${i.name} ₹${i.price}<br>`);
+o.innerHTML=h;
+}
+load();
+</script>
