@@ -2,108 +2,93 @@
 <html>
 <head>
     <title>NexCart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #fff; }
+        .header { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
+        .login-bar { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        input { padding: 5px; border: 1px solid #ccc; flex: 1; min-width: 120px; }
+        button { padding: 6px 12px; cursor: pointer; background: #eee; border: 1px solid #999; border-radius: 3px; }
+        .product { border: 1px solid #eee; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .product img { max-width: 150px; display: block; margin-bottom: 10px; }
+        .product h3 { margin: 5px 0; font-size: 18px; }
+        .status-msg { color: green; font-size: 14px; margin-top: 5px; }
+    </style>
 </head>
-
-    
 <body>
 
-<h2>🛒 NexCart</h2>
+<div class="header">
+    <h2>🛒 NexCart</h2>
+    <div class="login-bar">
+        <input id="user" placeholder="Username">
+        <input id="pass" type="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <button onclick="login()">Login</button>
+        <button onclick="location.href='/cart-page'">Go to Cart</button>
+    </div>
+    <div id="status" class="status-msg"></div>
+</div>
 
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-<button onclick="openCart()">Go to Cart</button>
-
-<div id="products"></div>
+<div id="products">Loading products...</div>
 
 <script>
-let currentUser = null;
-let allProducts = [];
+let currentUserId = null;
 
-async function loadProducts(){
-    let res = await fetch("/products");
-    allProducts = await res.json();
-
+async function loadProducts() {
+    const res = await fetch("/products");
+    const data = await res.json();
     let html = "";
-    allProducts.forEach(p=>{
+    data.forEach(p => {
         html += `
-            <div>
-                <img src="${p.img}" width="100">
-                <h3>${p.name}</h3>
-                <p>₹${p.price}</p>
-                <button onclick="addToCart('${p.name}', ${p.price})">
-                    Add to Cart
-                </button>
-            </div>
-        `;
+        <div class="product">
+            <img src="${p.img}">
+            <h3>${p.name}</h3>
+            <p>₹${p.price}</p>
+            <button onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
+        </div>`;
     });
-
     document.getElementById("products").innerHTML = html;
 }
 
-async function register(){
-    await fetch("/register", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            username:user.value,
-            password:pass.value
-        })
+async function register() {
+    const res = await fetch("/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username: user.value, password: pass.value })
     });
-    alert("Registered");
+    const data = await res.json();
+    alert(data.message);
 }
 
-async function login(){
-    let res = await fetch("/login", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            username:user.value,
-            password:pass.value
-        })
+async function login() {
+    const res = await fetch("/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username: user.value, password: pass.value })
     });
-
-    let data = await res.json();
-
-    if(data.user_id){
-        currentUser = data.user_id;
-        alert("Login success");
+    const data = await res.json();
+    if(data.user_id) {
+        currentUserId = data.user_id;
+        document.getElementById("status").innerText = "Logged in as: " + user.value;
+        alert("Login successful!");
     } else {
-        alert("Login failed");
+        alert("Login failed!");
     }
 }
 
-async function addToCart(name, price){
-    if(!currentUser){
-        alert("Login first!");
-        return;
-    }
-
-    await fetch("/add-to-cart", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            name, price, user_id: currentUser
-        })
+async function addToCart(name, price) {
+    if(!currentUserId) { alert("Please login first!"); return; }
+    const res = await fetch("/add-to-cart", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ name, price })
     });
-
-    alert("Added");
-}
-
-function openCart(){
-    if(!currentUser){
-        alert("Login first!");
-        return;
-    }
-
-    localStorage.setItem("user_id", currentUser);
-    window.location.href = "/cart-page";
+    const data = await res.json();
+    alert(data.message);
 }
 
 loadProducts();
 </script>
-
 </body>
 </html>
+
