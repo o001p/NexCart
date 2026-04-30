@@ -2,63 +2,228 @@
 <html>
 <head>
 <title>NexCart</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#f1f3f6}
+
+/* HEADER */
+.header{
+background:#2874f0;
+color:white;
+display:flex;
+align-items:center;
+padding:10px;
+gap:10px;
+}
+
+.logo{font-size:22px;font-weight:bold}
+
+.search{
+flex:1;
+padding:8px;
+border:none;
+border-radius:3px;
+}
+
+/* NAV */
+.nav button{
+margin-left:5px;
+padding:6px;
+border:none;
+background:white;
+color:#2874f0;
+cursor:pointer;
+}
+
+/* FILTER */
+.filter{
+padding:10px;
+background:white;
+}
+
+/* GRID */
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+padding:15px;
+}
+
+/* CARD */
+.card{
+background:white;
+padding:10px;
+border-radius:6px;
+}
+
+img{width:100%;height:180px;object-fit:contain}
+
+button{
+background:#fb641b;
+color:white;
+border:none;
+padding:8px;
+width:100%;
+margin-top:5px;
+}
+
+/* LOGIN MODAL */
+.modal{
+display:none;
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.5);
+justify-content:center;
+align-items:center;
+}
+
+.box{
+background:white;
+padding:20px;
+width:300px;
+}
+
+input{width:100%;padding:8px;margin:5px 0}
+</style>
 </head>
 
 <body>
 
-<h2>🛒 NexCart</h2>
+<!-- HEADER -->
+<div class="header">
+    <div class="logo">🛒 NexCart</div>
+    <input class="search" id="search" placeholder="Search..." onkeyup="search()">
 
-<button onclick="openProfile()">Profile</button>
+    <div class="nav">
+        <button onclick="openModal()">Login</button>
+        <button onclick="openCart()">Cart</button>
+        <button onclick="openOrders()">Orders</button>
+        <button onclick="openWishlist()">❤️</button>
+        <button onclick="openProfile()">Profile</button>
+    </div>
+</div>
 
-<br><br>
+<!-- FILTER -->
+<div class="filter">
+    <button onclick="filter('All')">All</button>
+    <button onclick="filter('Stationery')">Stationery</button>
+    <button onclick="filter('Toys')">Toys</button>
+</div>
 
-<input id="user" placeholder="Username">
-<input id="pass" placeholder="Password">
+<!-- PRODUCTS -->
+<div class="container" id="products"></div>
 
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
+<!-- LOGIN POPUP -->
+<div class="modal" id="modal">
+<div class="box">
 
-<h3>Products</h3>
-<div id="products"></div>
+<h3 id="title">Login</h3>
+
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="submit()">Submit</button>
+
+<p onclick="toggle()" style="cursor:pointer;color:blue">
+Switch Login / Signup
+</p>
+
+</div>
+</div>
 
 <script>
+let mode="login";
+let allProducts=[];
+
+// LOAD PRODUCTS
 async function load(){
 let r=await fetch("/products");
-let d=await r.json();
+allProducts=await r.json();
+display(allProducts);
+}
 
-let h="";
-d.forEach(p=>{
-h+=`${p.name} ₹${p.price}
-<button onclick="add('${p.name}',${p.price})">Add</button><br>`;
+// DISPLAY
+function display(data){
+let html="";
+data.forEach(p=>{
+html+=`
+<div class="card">
+<img src="${p.img}">
+<h3>${p.name}</h3>
+<p>₹${p.price}</p>
+
+<button onclick="add('${p.name}',${p.price})">Add to Cart</button>
+<button onclick="wish('${p.name}',${p.price})">❤️ Wishlist</button>
+</div>`;
 });
-products.innerHTML=h;
+products.innerHTML=html;
 }
 
-async function register(){
-await fetch("/register",{method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:user.value,password:pass.value})});
-alert("Registered");
+// FILTER
+function filter(cat){
+if(cat=="All") return display(allProducts);
+display(allProducts.filter(p=>p.category==cat));
 }
 
-async function login(){
-let r=await fetch("/login",{method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:user.value,password:pass.value})});
-let d=await r.json();
-alert(d.message);
+// SEARCH
+function search(){
+let v=searchBox();
+display(allProducts.filter(p=>p.name.toLowerCase().includes(v)));
+}
+function searchBox(){
+return document.getElementById("search").value.toLowerCase();
 }
 
+// NAV
+function openCart(){location="/cart-page";}
+function openOrders(){location="/orders-page";}
+function openWishlist(){location="/wishlist-page";}
+function openProfile(){location="/profile";}
+
+// ADD CART
 async function add(n,p){
 let r=await fetch("/add-to-cart",{method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({name:n,price:p})});
-let d=await r.json();
-alert(d.message);
+let d=await r.json();alert(d.message);
 }
 
-function openProfile(){
-window.location="/profile";
+// WISHLIST
+async function wish(n,p){
+let r=await fetch("/add-wishlist",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name:n,price:p})});
+let d=await r.json();alert(d.message);
+}
+
+// LOGIN MODAL
+function openModal(){modal.style.display="flex";}
+window.onclick=e=>{if(e.target==modal) modal.style.display="none";}
+
+// TOGGLE
+function toggle(){
+if(mode=="login"){mode="signup";title.innerText="Signup";}
+else{mode="login";title.innerText="Login";}
+}
+
+// SUBMIT
+async function submit(){
+let url = mode=="login"?"/login":"/register";
+
+let r=await fetch(url,{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+username:username.value,
+password:password.value
+})});
+
+let d=await r.json();
+alert(d.message);
+
+if(d.message.includes("success")){
+modal.style.display="none";
+}
 }
 
 load();
