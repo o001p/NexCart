@@ -1,0 +1,12 @@
+<h2>Wishlist</h2>
+<div id="w"></div>
+
+<script>
+async function load(){
+let r=await fetch("/wishlist");
+let d=await r.json();
+let h="";d.forEach(i=>h+=`${i.name} ₹${i.price}<br>`);
+w.innerHTML=h;
+}
+load();
+</script>
