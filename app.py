@@ -5,7 +5,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ==============================
-# 🔴 EDIT THIS SECTION FOR NEW PRODUCTS
+# 🔴 EDIT THIS SECTION FOR NEW PRODUCT
 # ==============================
 products = [
     {
