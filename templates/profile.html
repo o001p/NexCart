@@ -1,0 +1,32 @@
+<h2>👤 Profile</h2>
+<p id="user"></p>
+
+<h3>Orders</h3>
+<div id="orders"></div>
+
+<h3>Wishlist</h3>
+<div id="wishlist"></div>
+
+<h3>Cart</h3>
+<div id="cart"></div>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+async function load(){
+let u=await fetch("/user-info");let ud=await u.json();
+user.innerText="User: "+ud.username;
+
+let o=await fetch("/orders");let od=await o.json();
+orders.innerHTML=od.map(i=>i.name+" ₹"+i.price).join("<br>");
+
+let w=await fetch("/wishlist");let wd=await w.json();
+wishlist.innerHTML=wd.map(i=>i.name+" ₹"+i.price).join("<br>");
+
+let c=await fetch("/cart");let cd=await c.json();
+cart.innerHTML=cd.map(i=>i.name+" ₹"+i.price).join("<br>");
+}
+
+function logout(){location="/logout";}
+load();
+</script>
