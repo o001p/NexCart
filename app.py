@@ -10,18 +10,18 @@ CORS(app)
 products = [
     {
         "id": 1,
-        "name": "Astronaut Pencil Sharpener",   # 🔴 CHANGE NAME
-        "price": 149,                           # 🔴 CHANGE PRICE
-        "description": "Cute astronaut-themed sharpener for kids.",
-        "features": [
-            "Smooth sharpening",
-            "Durable material",
-            "Portable design",
-            "Best for school & gifting"
-        ],
-        "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/v1777572636/uc_fkvhws.png",  # 🔴 CHANGE IMAGE
-        "stock": 50                             # 🔴 CHANGE STOCK
-    }
+        "name": "Astronaut Pencil Sharpener",
+        "price": 149,
+        "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/q_auto/f_auto/v1777572636/uc_fkvhws.png"
+    },
+    {
+        "id": 2,
+        "name": "Cute Eraser Set",
+        "price": 99,
+        "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/q_auto/f_auto/v1777573602/WhatsApp_Image_2026-04-30_at_23.55.29_jvct4k.jpg"
+        "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/q_auto/f_auto/v1777573602/WhatsApp_Image_2026-04-30_at_23.55.29_1_ruw5xi.jpg"
+    },
+
 ]
 # ==============================
 
