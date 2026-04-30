@@ -9,7 +9,7 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cart.db'
 db = SQLAlchemy(app)
 
-# ---------------- USER ----------------
+# ---------------- USER ---------------
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50))
