@@ -19,7 +19,7 @@ products = [
         "name": "Cute Eraser Set",
         "price": 99,
         "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/q_auto/f_auto/v1777573602/WhatsApp_Image_2026-04-30_at_23.55.29_jvct4k.jpg"
-        "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/q_auto/f_auto/v1777573602/WhatsApp_Image_2026-04-30_at_23.55.29_1_ruw5xi.jpg"
+       
     },
 
 ]
