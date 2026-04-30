@@ -24,6 +24,27 @@ products = [
 
 ]
 # ==============================
+# ---------------- CART ----------------
+cart = []
+
+# ADD TO CART
+@app.route("/add-to-cart", methods=["POST"])
+def add_to_cart():
+    data = request.json
+    cart.append(data)
+    return jsonify({"message": "Item added to cart"})
+
+# VIEW CART
+@app.route("/cart")
+def view_cart():
+    return jsonify(cart)
+
+# CLEAR CART
+@app.route("/clear-cart")
+def clear_cart():
+    cart.clear()
+    return jsonify({"message": "Cart cleared"})
+
 
 
 @app.route("/")
