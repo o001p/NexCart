@@ -19,7 +19,7 @@ products = [
             "Portable design",
             "Best for school & gifting"
         ],
-        "img": "https://drive.google.com/uc?export=view&id=1n7A_0FlFbWeacd4V-iXo_OpQ5wob-NC_",  # 🔴 CHANGE IMAGE
+        "img": "https://res.cloudinary.com/dhhmstxp2/image/upload/v1777572636/uc_fkvhws.png",  # 🔴 CHANGE IMAGE
         "stock": 50                             # 🔴 CHANGE STOCK
     }
 ]
