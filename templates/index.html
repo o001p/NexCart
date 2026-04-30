@@ -1,222 +1,64 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <title>NexCart</title>
-
-<style>
-body{margin:0;font-family:Arial;background:#f1f3f6}
-
-/* HEADER */
-.header{
-background:#2874f0;
-color:white;
-display:flex;
-align-items:center;
-padding:10px;
-gap:15px;
-}
-
-.logo{font-size:22px;font-weight:bold}
-
-.search{
-flex:1;
-padding:8px;
-border:none;
-border-radius:3px;
-}
-
-/* NAV */
-.nav button{
-margin-left:10px;
-padding:6px 10px;
-border:none;
-background:white;
-color:#2874f0;
-cursor:pointer;
-border-radius:3px;
-}
-
-/* FILTER */
-.filter{
-padding:10px;
-background:white;
-}
-
-/* GRID */
-.container{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:15px;
-padding:15px;
-}
-
-/* CARD */
-.card{
-background:white;
-padding:10px;
-border-radius:6px;
-transition:.2s;
-}
-
-.card:hover{transform:scale(1.03)}
-
-img{
-width:100%;
-height:180px;
-object-fit:contain;
-}
-
-.name{font-weight:bold}
-
-.price{color:green;font-size:18px}
-
-.old{color:gray;text-decoration:line-through;font-size:13px}
-
-.rating{
-background:green;
-color:white;
-font-size:12px;
-padding:2px 6px;
-border-radius:4px;
-display:inline-block;
-margin-top:5px;
-}
-
-button.buy{
-background:#fb641b;
-color:white;
-border:none;
-padding:8px;
-width:100%;
-margin-top:8px;
-cursor:pointer;
-}
-
-button.wish{
-background:#ff4081;
-color:white;
-border:none;
-padding:6px;
-width:100%;
-margin-top:5px;
-}
-</style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-    <div class="logo">🛒 NexCart</div>
-    <input class="search" id="search" placeholder="Search products..." onkeyup="search()">
+<h2>🛒 NexCart</h2>
 
-    <div class="nav">
-        <button onclick="openCart()">Cart</button>
-        <button onclick="openOrders()">Orders</button>
-        <button onclick="openWishlist()">❤️</button>
-    </div>
-</div>
+<button onclick="openProfile()">Profile</button>
 
-<!-- FILTER -->
-<div class="filter">
-    <button onclick="filter('All')">All</button>
-    <button onclick="filter('Stationery')">Stationery</button>
-    <button onclick="filter('Toys')">Toys</button>
-</div>
+<br><br>
 
-<!-- PRODUCTS -->
-<div class="container" id="products"></div>
+<input id="user" placeholder="Username">
+<input id="pass" placeholder="Password">
+
+<button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
+
+<h3>Products</h3>
+<div id="products"></div>
 
 <script>
-let allProducts = [];
-
-// LOAD PRODUCTS
 async function load(){
-    let res = await fetch("/products");
-    allProducts = await res.json();
-    display(allProducts);
+let r=await fetch("/products");
+let d=await r.json();
+
+let h="";
+d.forEach(p=>{
+h+=`${p.name} ₹${p.price}
+<button onclick="add('${p.name}',${p.price})">Add</button><br>`;
+});
+products.innerHTML=h;
 }
 
-// DISPLAY PRODUCTS
-function display(data){
-    let html = "";
-
-    data.forEach(p=>{
-        html += `
-        <div class="card">
-            <img src="${p.img}">
-
-            <div class="name">${p.name}</div>
-
-            <div>
-                <span class="price">₹${p.price}</span>
-                <span class="old">₹${p.price + 50}</span>
-            </div>
-
-            <div class="rating">4.2 ★</div>
-
-            <button class="buy" onclick="add('${p.name}', ${p.price})">
-                Add to Cart
-            </button>
-
-            <button class="wish" onclick="wish('${p.name}', ${p.price})">
-                ❤️ Wishlist
-            </button>
-        </div>`;
-    });
-
-    document.getElementById("products").innerHTML = html;
+async function register(){
+await fetch("/register",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:user.value,password:pass.value})});
+alert("Registered");
 }
 
-// FILTER
-function filter(cat){
-    if(cat === "All"){
-        display(allProducts);
-        return;
-    }
-
-    let filtered = allProducts.filter(p => p.category === cat);
-    display(filtered);
+async function login(){
+let r=await fetch("/login",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:user.value,password:pass.value})});
+let d=await r.json();
+alert(d.message);
 }
 
-// SEARCH
-function search(){
-    let value = document.getElementById("search").value.toLowerCase();
-
-    let filtered = allProducts.filter(p =>
-        p.name.toLowerCase().includes(value)
-    );
-
-    display(filtered);
+async function add(n,p){
+let r=await fetch("/add-to-cart",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name:n,price:p})});
+let d=await r.json();
+alert(d.message);
 }
 
-// NAVIGATION
-function openCart(){ window.location = "/cart-page"; }
-function openOrders(){ window.location = "/orders-page"; }
-function openWishlist(){ window.location = "/wishlist-page"; }
-
-// ADD TO CART
-async function add(name, price){
-    let res = await fetch("/add-to-cart", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({name, price})
-    });
-
-    let data = await res.json();
-    alert(data.message);
-}
-
-// ADD TO WISHLIST
-async function wish(name, price){
-    let res = await fetch("/add-wishlist", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({name, price})
-    });
-
-    let data = await res.json();
-    alert(data.message);
+function openProfile(){
+window.location="/profile";
 }
 
 load();
