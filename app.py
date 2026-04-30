@@ -7,7 +7,6 @@ app = Flask(__name__)
 CORS(app)
 
 app.secret_key = "secret123"
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cart.db'
 db = SQLAlchemy(app)
 
@@ -75,7 +74,19 @@ def login():
     if user and check_password_hash(user.password,data["password"]):
         session["user_id"] = user.id
         return jsonify({"message":"Login success"})
-    return jsonify({"message":"Invalid"})
+    return jsonify({"message":"Invalid login"})
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+@app.route("/user-info")
+def user_info():
+    if "user_id" not in session:
+        return jsonify({})
+    user = User.query.get(session["user_id"])
+    return jsonify({"username": user.username})
 
 # ---------------- PRODUCTS ----------------
 @app.route("/products")
@@ -86,11 +97,6 @@ def get_products():
 def home():
     return render_template("index.html")
 
-@app.route("/product/<int:id>")
-def product_page(id):
-    product = next((p for p in products if p["id"]==id),None)
-    return render_template("product.html",product=product)
-
 # ---------------- CART ----------------
 @app.route("/add-to-cart", methods=["POST"])
 def add_cart():
@@ -100,21 +106,13 @@ def add_cart():
     d = request.json
     db.session.add(Cart(name=d["name"],price=d["price"],user_id=session["user_id"]))
     db.session.commit()
-    return jsonify({"message":"Added"})
+    return jsonify({"message":"Added to cart"})
 
 @app.route("/cart")
 def cart():
     if "user_id" not in session: return jsonify([])
     items = Cart.query.filter_by(user_id=session["user_id"]).all()
     return jsonify([{"id":i.id,"name":i.name,"price":i.price} for i in items])
-
-@app.route("/remove/<int:id>")
-def remove(id):
-    item = Cart.query.get(id)
-    if item:
-        db.session.delete(item)
-        db.session.commit()
-    return jsonify({"message":"Removed"})
 
 # ---------------- WISHLIST ----------------
 @app.route("/add-wishlist", methods=["POST"])
@@ -142,7 +140,7 @@ def save_addr():
     d = request.json
     db.session.add(Address(**d,user_id=session["user_id"]))
     db.session.commit()
-    return jsonify({"message":"Saved"})
+    return jsonify({"message":"Address saved"})
 
 # ---------------- ORDER ----------------
 @app.route("/place-order")
@@ -151,12 +149,14 @@ def order():
         return jsonify({"message":"Login required"})
 
     items = Cart.query.filter_by(user_id=session["user_id"]).all()
+
     for i in items:
         db.session.add(Order(name=i.name,price=i.price,user_id=session["user_id"]))
 
     Cart.query.filter_by(user_id=session["user_id"]).delete()
     db.session.commit()
-    return jsonify({"message":"Order placed"})
+
+    return jsonify({"message":"Order placed successfully 🎉"})
 
 @app.route("/orders")
 def orders():
@@ -176,6 +176,12 @@ def orders_page(): return render_template("orders.html")
 
 @app.route("/wishlist-page")
 def wishlist_page(): return render_template("wishlist.html")
+
+@app.route("/profile")
+def profile():
+    if "user_id" not in session:
+        return redirect("/")
+    return render_template("profile.html")
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
