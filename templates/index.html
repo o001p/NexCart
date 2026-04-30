@@ -1,94 +1,226 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html>
 <head>
-    <title>NexCart</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #fff; }
-        .header { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; }
-        .login-bar { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
-        input { padding: 5px; border: 1px solid #ccc; flex: 1; min-width: 120px; }
-        button { padding: 6px 12px; cursor: pointer; background: #eee; border: 1px solid #999; border-radius: 3px; }
-        .product { border: 1px solid #eee; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        .product img { max-width: 150px; display: block; margin-bottom: 10px; }
-        .product h3 { margin: 5px 0; font-size: 18px; }
-        .status-msg { color: green; font-size: 14px; margin-top: 5px; }
-    </style>
+<title>NexCart</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#f1f3f6}
+
+/* HEADER */
+.header{
+background:#2874f0;
+color:white;
+display:flex;
+align-items:center;
+padding:10px;
+gap:15px;
+}
+
+.logo{font-size:22px;font-weight:bold}
+
+.search{
+flex:1;
+padding:8px;
+border:none;
+border-radius:3px;
+}
+
+/* NAV */
+.nav button{
+margin-left:10px;
+padding:6px 10px;
+border:none;
+background:white;
+color:#2874f0;
+cursor:pointer;
+border-radius:3px;
+}
+
+/* FILTER */
+.filter{
+padding:10px;
+background:white;
+}
+
+/* GRID */
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+padding:15px;
+}
+
+/* CARD */
+.card{
+background:white;
+padding:10px;
+border-radius:6px;
+transition:.2s;
+}
+
+.card:hover{transform:scale(1.03)}
+
+img{
+width:100%;
+height:180px;
+object-fit:contain;
+}
+
+.name{font-weight:bold}
+
+.price{color:green;font-size:18px}
+
+.old{color:gray;text-decoration:line-through;font-size:13px}
+
+.rating{
+background:green;
+color:white;
+font-size:12px;
+padding:2px 6px;
+border-radius:4px;
+display:inline-block;
+margin-top:5px;
+}
+
+button.buy{
+background:#fb641b;
+color:white;
+border:none;
+padding:8px;
+width:100%;
+margin-top:8px;
+cursor:pointer;
+}
+
+button.wish{
+background:#ff4081;
+color:white;
+border:none;
+padding:6px;
+width:100%;
+margin-top:5px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- HEADER -->
 <div class="header">
-    <h2>🛒 NexCart</h2>
-    <div class="login-bar">
-        <input id="user" placeholder="Username">
-        <input id="pass" type="password" placeholder="Password">
-        <button onclick="register()">Register</button>
-        <button onclick="login()">Login</button>
-        <button onclick="location.href='/cart-page'">Go to Cart</button>
+    <div class="logo">🛒 NexCart</div>
+    <input class="search" id="search" placeholder="Search products..." onkeyup="search()">
+
+    <div class="nav">
+        <button onclick="openCart()">Cart</button>
+        <button onclick="openOrders()">Orders</button>
+        <button onclick="openWishlist()">❤️</button>
     </div>
-    <div id="status" class="status-msg"></div>
 </div>
 
-<div id="products">Loading products...</div>
+<!-- FILTER -->
+<div class="filter">
+    <button onclick="filter('All')">All</button>
+    <button onclick="filter('Stationery')">Stationery</button>
+    <button onclick="filter('Toys')">Toys</button>
+</div>
+
+<!-- PRODUCTS -->
+<div class="container" id="products"></div>
 
 <script>
-let currentUserId = null;
+let allProducts = [];
 
-async function loadProducts() {
-    const res = await fetch("/products");
-    const data = await res.json();
+// LOAD PRODUCTS
+async function load(){
+    let res = await fetch("/products");
+    allProducts = await res.json();
+    display(allProducts);
+}
+
+// DISPLAY PRODUCTS
+function display(data){
     let html = "";
-    data.forEach(p => {
+
+    data.forEach(p=>{
         html += `
-        <div class="product">
+        <div class="card">
             <img src="${p.img}">
-            <h3>${p.name}</h3>
-            <p>₹${p.price}</p>
-            <button onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
+
+            <div class="name">${p.name}</div>
+
+            <div>
+                <span class="price">₹${p.price}</span>
+                <span class="old">₹${p.price + 50}</span>
+            </div>
+
+            <div class="rating">4.2 ★</div>
+
+            <button class="buy" onclick="add('${p.name}', ${p.price})">
+                Add to Cart
+            </button>
+
+            <button class="wish" onclick="wish('${p.name}', ${p.price})">
+                ❤️ Wishlist
+            </button>
         </div>`;
     });
+
     document.getElementById("products").innerHTML = html;
 }
 
-async function register() {
-    const res = await fetch("/register", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username: user.value, password: pass.value })
-    });
-    const data = await res.json();
-    alert(data.message);
-}
-
-async function login() {
-    const res = await fetch("/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username: user.value, password: pass.value })
-    });
-    const data = await res.json();
-    if(data.user_id) {
-        currentUserId = data.user_id;
-        document.getElementById("status").innerText = "Logged in as: " + user.value;
-        alert("Login successful!");
-    } else {
-        alert("Login failed!");
+// FILTER
+function filter(cat){
+    if(cat === "All"){
+        display(allProducts);
+        return;
     }
+
+    let filtered = allProducts.filter(p => p.category === cat);
+    display(filtered);
 }
 
-async function addToCart(name, price) {
-    if(!currentUserId) { alert("Please login first!"); return; }
-    const res = await fetch("/add-to-cart", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ name, price })
+// SEARCH
+function search(){
+    let value = document.getElementById("search").value.toLowerCase();
+
+    let filtered = allProducts.filter(p =>
+        p.name.toLowerCase().includes(value)
+    );
+
+    display(filtered);
+}
+
+// NAVIGATION
+function openCart(){ window.location = "/cart-page"; }
+function openOrders(){ window.location = "/orders-page"; }
+function openWishlist(){ window.location = "/wishlist-page"; }
+
+// ADD TO CART
+async function add(name, price){
+    let res = await fetch("/add-to-cart", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({name, price})
     });
-    const data = await res.json();
+
+    let data = await res.json();
     alert(data.message);
 }
 
-loadProducts();
+// ADD TO WISHLIST
+async function wish(name, price){
+    let res = await fetch("/add-wishlist", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({name, price})
+    });
+
+    let data = await res.json();
+    alert(data.message);
+}
+
+load();
 </script>
+
 </body>
 </html>
-
