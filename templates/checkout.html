@@ -1,0 +1,28 @@
+<h2>Checkout</h2>
+
+<input id="name" placeholder="Name">
+<input id="mobile" placeholder="Mobile">
+<input id="address" placeholder="Address">
+<input id="city" placeholder="City">
+<input id="pincode" placeholder="Pincode">
+
+<button onclick="save()">Save Address</button>
+<button onclick="order()">Place Order</button>
+
+<script>
+async function save(){
+await fetch("/save-address",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+name:name.value,mobile:mobile.value,address:address.value,
+city:city.value,pincode:pincode.value
+})});
+alert("Saved");
+}
+
+async function order(){
+let r=await fetch("/place-order");
+let d=await r.json();
+alert(d.message);
+}
+</script>
