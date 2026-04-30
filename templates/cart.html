@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart</title>
+</head>
+
+<body>
+
+<h2>🛒 Your Cart</h2>
+
+<div id="cart"></div>
+<h3 id="total"></h3>
+
+<button onclick="goHome()">Back</button>
+
+<script>
+let user_id = localStorage.getItem("user_id");
+
+async function loadCart(){
+    let res = await fetch(`/cart/${user_id}`);
+    let data = await res.json();
+
+    let html = "";
+    let total = 0;
+
+    data.forEach(item=>{
+        total += item.price;
+
+        html += `
+            <div>
+                ${item.name} - ₹${item.price}
+                <button onclick="removeItem(${item.id})">Remove</button>
+            </div>
+        `;
+    });
+
+    document.getElementById("cart").innerHTML = html;
+    document.getElementById("total").innerText = "Total: ₹" + total;
+}
+
+async function removeItem(id){
+    await fetch(`/remove-item/${id}`);
+    loadCart();
+}
+
+function goHome(){
+    window.location.href = "/";
+}
+
+loadCart();
+</script>
+
+</body>
+</html>
